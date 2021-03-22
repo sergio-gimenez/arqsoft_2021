@@ -62,8 +62,10 @@ public class TextUserInterface implements UserInterface {
         String variableName = "";
         if (line.contains("=")) {
             String[] lineGroup = line.split("=");
-            expression = lineGroup[1];
+            expression = lineGroup[1].trim();
             variableName = lineGroup[0].replaceAll("\\s+", "");
+        }else{
+            expression = line;
         }
         ExpressionGenerator expressionGenerator = this.uiFactory.createExpressionGenerator(this.calculator.memory());
         SimpleExpression simpleExpression = expressionGenerator.getFromString(expression, calcFactory);
