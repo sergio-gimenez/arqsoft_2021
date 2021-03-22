@@ -58,10 +58,20 @@ public class TextUserInterface implements UserInterface {
     }
 
     public void processLine(String line) throws ExpressionException {
+        String expression = "";
+        String variableName = "";
+        if (line.contains("=")) {
+            String[] lineGroup = line.split("=");
+            expression = lineGroup[1];
+            variableName = lineGroup[0].replaceAll("\\s+", "");
+        }
         ExpressionGenerator expressionGenerator = this.uiFactory.createExpressionGenerator(this.calculator.memory());
-        
-        SimpleExpression simpleExpression = expressionGenerator.getFromString(line, calcFactory);
+        SimpleExpression simpleExpression = expressionGenerator.getFromString(expression, calcFactory);
         MyNumber myNumber = simpleExpression.evaluate();
+        if (!variableName.isEmpty()) {
+            this.calculator.defineVariable(this.calcFactory.createVariable(variableName, myNumber));
+        }
+
         System.out.println(myNumber.getValue());
     }
 
