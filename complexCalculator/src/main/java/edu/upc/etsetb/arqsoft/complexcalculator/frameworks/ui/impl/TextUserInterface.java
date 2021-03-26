@@ -10,6 +10,7 @@ import edu.upc.etsetb.arqsoft.complexcalculator.entities.ComplexCalculator;
 import edu.upc.etsetb.arqsoft.complexcalculator.entities.ExpressionException;
 import edu.upc.etsetb.arqsoft.complexcalculator.entities.MyNumber;
 import edu.upc.etsetb.arqsoft.complexcalculator.entities.SimpleExpression;
+import edu.upc.etsetb.arqsoft.complexcalculator.entities.Variable;
 import edu.upc.etsetb.arqsoft.complexcalculator.frameworks.ui.UIFactory;
 import edu.upc.etsetb.arqsoft.complexcalculator.frameworks.ui.UserInterface;
 import edu.upc.etsetb.arqsoft.complexcalculator.usecases.ExpressionGenerator;
@@ -26,11 +27,13 @@ public class TextUserInterface implements UserInterface {
     private UIFactory uiFactory;
     private CalculatorFactory calcFactory;
     private ComplexCalculator calculator;
+    private ExpressionGenerator expressionGenerator;
 
     protected TextUserInterface(UIFactory uiFactory, CalculatorFactory calcFactory, ComplexCalculator calculator) {
         this.uiFactory = uiFactory;
         this.calcFactory = calcFactory;
         this.calculator = calculator;
+        this.expressionGenerator = this.uiFactory.createExpressionGenerator(this.calculator.memory());
     }
 
     public static UserInterface getInstance(UIFactory uiFactory, CalculatorFactory calcFactory, ComplexCalculator calculator) {
@@ -60,21 +63,25 @@ public class TextUserInterface implements UserInterface {
     public void processLine(String line) throws ExpressionException {
         String expression = "";
         String variableName = "";
+
         if (line.contains("=")) {
             String[] lineGroup = line.split("=");
             expression = lineGroup[1].trim();
             variableName = lineGroup[0].replaceAll("\\s+", "");
-        }else{
+        } else {
             expression = line;
         }
-        ExpressionGenerator expressionGenerator = this.uiFactory.createExpressionGenerator(this.calculator.memory());
         SimpleExpression simpleExpression = expressionGenerator.getFromString(expression, calcFactory);
-        MyNumber myNumber = simpleExpression.evaluate();
+        MyNumber result = simpleExpression.evaluate();
         if (!variableName.isEmpty()) {
-            this.calculator.defineVariable(this.calcFactory.createVariable(variableName, myNumber));
+            Variable variable = calcFactory.createVariable(variableName);
+            variable.setValue(result);
+            this.calculator.memory().addVariable(variable);
+            System.out.println(variableName + " = " + result.getValue());
+        } else {
+            System.out.println(result.getValue());
         }
 
-        System.out.println(myNumber.getValue());
     }
 
 }
